@@ -62,6 +62,17 @@ function usage() {
     exit 1
 }
 
+# If AWS credentials aren't passed in via environment variables, attempt
+# to get them using the CLI tools.
+if [ -z "$AWS_ACCESS_KEY_ID" -o -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    if [ -x "$(which aws)" ]; then
+        AWS_ACCESS_KEY_ID="$(aws configure get aws_access_key_id || true)"
+        AWS_SECRET_ACCESS_KEY="$(aws configure get aws_secret_access_key || true)"
+        AWS_SESSION_TOKEN="$(aws configure get aws_session_token || true)"
+    fi
+fi
+
+
 if [ -z "$AWS_ACCESS_KEY_ID" ]; then
     printf "Error: AWS_ACCESS_KEY_ID is undefined.\n\n"
     USAGE=yes
@@ -151,15 +162,15 @@ if [ -n "$(jq -M -r -s '(if .[0].name? then .[0].name else "" end)' "$BOX_DIR/bo
 fi
 
 # Generate VirtualBox-provided Vagrant box.
-#OS=$OS OS_RELEASE=$OS_RELEASE POST_PROCESSOR=vagrant-cloud PROVISIONER=$PROVISIONER \
-#   ./build.sh \
-#   -var "vm_name=$BOX_NAME" \
-#   -var "box_tag=$VAGRANT_CLOUD_USER/$BOX_NAME" \
-#   -var "box_version=$BOX_VERSION" \
-#   -var 'headless=true' \
-#   -var "memsize=$MEMSIZE" \
-#   -var 'ssh_wait_timeout=90m' \
-#   -var "access_token=$VAGRANT_CLOUD_TOKEN"
+OS=$OS OS_RELEASE=$OS_RELEASE POST_PROCESSOR=vagrant-cloud PROVISIONER=$PROVISIONER \
+   ./build.sh \
+   -var "vm_name=$BOX_NAME" \
+   -var "box_tag=$VAGRANT_CLOUD_USER/$BOX_NAME" \
+   -var "box_version=$BOX_VERSION" \
+   -var 'headless=true' \
+   -var "memsize=$MEMSIZE" \
+   -var 'ssh_wait_timeout=90m' \
+   -var "access_token=$VAGRANT_CLOUD_TOKEN"
 
 # Generate AWS-provided Vagrant box.
 OS=$OS OS_RELEASE=$OS_RELEASE POST_PROCESSOR=amazon-import PROVISIONER=$PROVISIONER \

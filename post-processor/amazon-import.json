@@ -4,7 +4,7 @@
             "type": "amazon-import",
             "access_key": "{{user `access_key`}}",
             "secret_key": "{{user `secret_key`}}",
-            "token": "{{user `session_token`}}",
+            "token": "{{user `token`}}",
             "ami_groups": [
                 "all"
             ],
